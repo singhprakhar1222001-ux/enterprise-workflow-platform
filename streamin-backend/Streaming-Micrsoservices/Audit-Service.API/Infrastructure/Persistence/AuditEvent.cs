@@ -2,6 +2,7 @@
 {
     public class AuditEvent
     {
+        
         public Guid EventId { get; set; }
         public Guid ActorId { get; set; }
         public Guid WorkId { get; set; }

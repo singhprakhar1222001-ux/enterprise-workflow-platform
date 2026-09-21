@@ -13,31 +13,39 @@ namespace Audit_Service.API.Infrastructure.BufferService
 
 
     {
-        private const string CopyCommand =
-        "COPY audit_events (id, actor_id, work_id, event_type, properties, occurred_at_utc, ingested_at_utc) " +
-        "FROM STDIN (FORMAT BINARY)";
+        private const string CopyCommand = """
+        COPY "AuditEvents"
+        ("ActorId", "WorkId", "EventId", "Properties", "OccuredOn")
+        FROM STDIN (FORMAT BINARY)
+        """;
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var reader = channel.Reader;
             var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-            var timertick = timer.WaitForNextTickAsync(stoppingToken).AsTask();
+           
             List<AuditEvent> Buffer = new();
+             
             try
             {
-                var readAvailable = reader.WaitToReadAsync(stoppingToken).AsTask();
-                await Task.WhenAny(readAvailable, timertick);
-                if (timertick.IsCompleted)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    //flush when completed even if empty
-                    await flush(Buffer,stoppingToken);
-                }
-                while (Buffer.Count() <= 20 && reader.TryRead(out var item))
-                {
-                    Buffer.Add(item);
-                }
-                if (Buffer.Count > 20)
-                {
-                    await flush(Buffer,stoppingToken);
+                    var timertick = timer.WaitForNextTickAsync(stoppingToken).AsTask();
+                    var readAvailable = reader.WaitToReadAsync(stoppingToken).AsTask();
+                    await Task.WhenAny(readAvailable, timertick);
+
+                    if (timertick.IsCompleted)
+                    {
+                        //flush when completed even if empty
+                        await flush(Buffer, stoppingToken);
+                    }
+                    while (Buffer.Count() < 20 && reader.TryRead(out var item))
+                    {
+                        Buffer.Add(item);
+                    }
+                    if (Buffer.Count > 20)
+                    {
+                        await flush(Buffer, stoppingToken);
+                    }
                 }
             }
             catch (Exception ex) {
@@ -74,6 +82,7 @@ namespace Audit_Service.API.Infrastructure.BufferService
                     
                     await writer.WriteAsync(e.Properties, NpgsqlDbType.Jsonb, ct);
                     await writer.WriteAsync(e.OccuredOn, NpgsqlDbType.TimestampTz, ct);
+                    
                     
                 }
 

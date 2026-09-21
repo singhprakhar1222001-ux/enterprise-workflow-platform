@@ -23,8 +23,8 @@ namespace Work_Service.Application.WorkContext
         {
             var OldAssigneeEntity = await _projectUserRepo.GetEntity(domainEvent.OldAssignedId);
             var newAssigneeEntity = await _projectUserRepo.GetEntity(domainEvent.NewAssignedId);
-            string oldAssignee=OldAssigneeEntity.Name;
-            string newAssignee = OldAssigneeEntity.Name;
+            string oldAssignee = OldAssigneeEntity.UserId.ToString();
+            string newAssignee = OldAssigneeEntity.UserId.ToString();
             ChangeEvent changeEvent = new ChangeEvent(
                 EventId: Guid.NewGuid(),
                 occuredon: DateTime.UtcNow,

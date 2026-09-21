@@ -30,20 +30,10 @@ namespace Contracts.WorkService.Events
     public record AuditPayload(
         string? comment,
         ChangeAudit? change
-        )
-    {
-        public string? comment { get; init; } = comment;
-        public ChangeAudit? changeAudit { get; init; }= change;
-        
-    }
+        );
     public record ChangeAudit(
         string? field,
         string? oldvalue,
         string? newvalue
-        )
-    {
-        public string? field { get; init; }= field;
-        public string? oldValue { get; init; }= oldvalue;
-        public string? newValue { get; init; }= newvalue;
-    }
+    );
 }

@@ -3,7 +3,7 @@
     public static class Topology
     {
         public const string EventQueue = "search.queue";
-        public const string routingKey = "workservice.#";
+        public const string routingKey = "workservice.search.#";
         public const string retryQueue30s = "search.retry-30s";
         public const string retryQueue60s = "search.retry-60s";
         public const string retryQueue90s = "search.retry-90s";

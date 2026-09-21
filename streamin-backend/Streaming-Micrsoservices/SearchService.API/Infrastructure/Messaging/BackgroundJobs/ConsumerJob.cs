@@ -38,7 +38,7 @@ namespace SearchService.API.Infrastructure.Messaging.BackgroundJobs
                 
                 var properties = EventArgs.BasicProperties;
                 int currentRetryCount = 0;
-                if (properties != null && properties.Headers.ContainsKey("x-retry-count")) {
+                if (properties != null && properties.Headers != null && properties.Headers.ContainsKey("x-retry-count")) {
                     currentRetryCount = Convert.ToInt32(properties.Headers["x-retry-count"]);
                 }
                 using var scope = scopeFactory.CreateScope();//dont leak to other messages

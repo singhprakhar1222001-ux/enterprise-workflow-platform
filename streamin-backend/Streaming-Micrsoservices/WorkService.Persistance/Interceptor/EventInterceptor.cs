@@ -27,7 +27,7 @@ namespace WorkService.Persistance.Interceptor
             //var debugView = context.ChangeTracker.DebugView.LongView;
             //Console.WriteLine(debugView);
             var event_entity = context.ChangeTracker.Entries<Entity>();
-            var ChangeList = event_entity.Select(e => GetStateMap(e.Entity)).ToList();
+            var ChangeList = event_entity.Where(e=>e.Entity.GetType()==typeof(Workitem)).Select(e => GetStateMap(e.Entity)).ToList();
             var changeWorkOutbox=new List<OutboxMessage>();
             foreach (var entry in ChangeList)
             {
@@ -55,7 +55,7 @@ namespace WorkService.Persistance.Interceptor
                     entity.ClearContext();
                     return DomainEvents;
                 }
-                );
+                ).ToList();
             //only because efcore has access to scope that initialized it, usually we cannot access service from a dependency this way and we shouldn't
             
             
@@ -66,7 +66,8 @@ namespace WorkService.Persistance.Interceptor
             }
             
             context?.AddRange(changeWorkOutbox);
-            return await base.SavingChangesAsync(eventData, result, cancellationToken);
+            var res=await base.SavingChangesAsync(eventData, result, cancellationToken);
+            return res;
         }
 
         private IIntegreationEvent? GetStateMap(Entity entity)
@@ -75,18 +76,28 @@ namespace WorkService.Persistance.Interceptor
             if(entity.GetType()==typeof(Workitem))
             {
                 var w=(Workitem)entity;
+                var list = new List<CommentEventProperty>();
+                foreach(var domainComment in w._Comment)
+                {
+                    list.Add(new CommentEventProperty(
+                        UserId: domainComment.Id.Value,
+                       comment: domainComment.Comment,
+                       Timestamp: domainComment.Timestamp
+                        ));
+                }
                 var workstate= 
                     new WorkCreatedEvent(
                     eventID: Guid.NewGuid(),
                     Id: w.Id,
                     name: w.Name,
                     description: w.description,
-                    comment: new List<CommentEventProperty>(),
+                    comment: list,
                     ProjectId: w.ProjectId,
                     assignedId: w.assignedId,
                     managerId: w.managerId,
                     assignmentDate: w.AssignmentDate,
-                    deadline: w.Deadline
+                    deadline: w.Deadline,
+                    version:w.Version
                     );
                 return workstate;
             }

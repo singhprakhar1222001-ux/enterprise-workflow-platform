@@ -62,7 +62,7 @@ namespace WorkService.Infrastructure.BackgroundJobs
                 {
                     throw;
                 }
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
             }
         }
     }

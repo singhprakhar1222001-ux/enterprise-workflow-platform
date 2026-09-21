@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Work_Service.Application.Abstractions;
+using Work_Service.Domain.Abstraction;
 using Work_Service.Domain.ProjectContext;
 using Work_Service.Domain.Projections;
 

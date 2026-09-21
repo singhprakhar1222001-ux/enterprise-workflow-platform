@@ -60,13 +60,8 @@ namespace Work_Service.Domain.ProjectContext
         
     }
 
-
-    public enum Role
-    {
-        Manager, 
-        SubManager,
-        Employee,
-    }
+    //this is the role within the project specific, doesnt have anything to with the user from projection
+    
     public record UserDetails(string Name, Role Role);
 
     public class UserCreationException : Exception

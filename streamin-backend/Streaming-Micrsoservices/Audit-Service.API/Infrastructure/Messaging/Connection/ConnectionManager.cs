@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Connections;
+using RabbitMQ.Client;
 
 namespace Audit_Service.API.Infrastructure.Messaging.Connection
 {
@@ -35,5 +36,7 @@ namespace Audit_Service.API.Infrastructure.Messaging.Connection
             }
             return connection;
         }
+
+        
     }
 }

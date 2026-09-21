@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Work_Service.Domain.Abstraction;
 using Work_Service.Domain.ProjectContext;
 
 namespace Work_Service.Domain.Projections

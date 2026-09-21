@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using SearchService.API.Features.SearchWork;
 using SearchService.API.Infrastructure.IndexingService;
 using SearchService.API.Infrastructure.Messaging.Topology;
 using SearchService.API.Infrastructure.Projections;
@@ -22,6 +23,8 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>((options) => {
             options.UseNpgsql(builder.Configuration.GetConnectionString("searchdb"));
         });
+        string connectionstring = builder.Configuration.GetConnectionString("searchdb");
+        Console.WriteLine($"searchDB connection : {connectionstring}");
         builder.Services.AddServices();
         var app = builder.Build();
 
@@ -53,7 +56,7 @@ public class Program
 
 
         app.MapControllers();
-
+        app.MapEndpoint();
         app.Run();
     }
 }

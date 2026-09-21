@@ -31,7 +31,36 @@ namespace SearchService.API.Infrastructure.IndexingService
 
         public async Task BulkUpload(BulkRequest bulkRequest,CancellationToken ct)
         {
-            var response = await client.BulkAsync(bulkRequest);
+            try
+            {
+                var response = await client.BulkAsync(bulkRequest);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<WorkIndexBody>> Search(string request)
+        {
+            var res = await client.SearchAsync<WorkIndexBody>(q => q
+            .Indices("work-index")
+            .From(0)
+            .Size(5)
+            .Query(q => q
+            .MultiMatch(q =>
+            q.Query(request)
+            .Fields()
+            .Fuzziness("AUTO")
+            )
+            )
+            );
+            List<WorkIndexBody> resList = new();
+            foreach( var item in res.HitsMetadata.Hits)
+            {
+                resList.Add(item.Source);
+            }
+            return resList;
         }
     }
 }

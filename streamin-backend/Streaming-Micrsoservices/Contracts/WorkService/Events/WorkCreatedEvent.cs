@@ -18,7 +18,8 @@ namespace Contracts.WorkService.Events
         Guid assignedId,
         Guid managerId,
         DateOnly assignmentDate,
-        DateOnly deadline
+        DateOnly deadline,
+        int? version=null
         ) : IIntegreationEvent,INotification
     {
         public Guid EventId { get; set; } = eventID;
@@ -42,6 +43,6 @@ namespace Contracts.WorkService.Events
         public DateOnly Deadline { get; private set; } = deadline;
         public bool IsOverDue { get; private set; } = false;
         public WorkStatus WorkStatus { get; private set; } = WorkStatus.InProgress;
-        public int Version { get; private set;  }
+        public int Version { get; private set; } = version==null?1:version.Value;
     }
 }

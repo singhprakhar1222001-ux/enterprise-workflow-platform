@@ -19,8 +19,7 @@ namespace Audit_Service.API.Infrastructure.Persistence
                 .HasColumnType("jsonb");
             auditEntity.HasIndex(x => x.Properties)
                 .HasMethod("gin");
-            
         }
-        public DbSet<AuditEvent> auditEvents;
+        public DbSet<AuditEvent> AuditEvents { get; set; }
     }
 }

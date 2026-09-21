@@ -1,6 +1,7 @@
 ﻿using Contracts.WorkService.Consts;
 using Contracts.WorkService.Events;
 using Contracts.WorkService.RoutingEventDirectory;
+using Elastic.Clients.Elasticsearch;
 using MediatR;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -35,46 +36,37 @@ namespace SearchService.API.Features.AddIndex
             try
             {
                 //validate for the presence of both in it
-                if (UserId != null && _projectCache.GetValue(request.ProjectId, out _) && _projectUserCache.GetValue(request.managerId, out _) && _projectUserCache.GetValue(request.assignedId, out _))
+                if (UserId != null && await _projectCache.GetValue(request.ProjectId) != null && await _projectUserCache.GetValue(request.managerId)!=null && await _projectUserCache.GetValue(request.assignedId)!=null)
                 {
                     ProjectProjection project = new();
-                    bool resProject = _projectCache.GetValue(request.ProjectId, out project);
-                    ProjectUserProjection projectAssignedUser = new();
-                    ProjectUserProjection projectManager = new ProjectUserProjection();
-                    bool resAssignedUser = _projectUserCache.GetValue(request.assignedId, out projectAssignedUser);
-                    bool managerUser = _projectUserCache.GetValue(request.managerId, out projectManager);
+                    //bool resProject = await _projectCache.GetValue(request.ProjectId);
+                    //ProjectUserProjection projectAssignedUser = new();
+                    //ProjectUserProjection projectManager = new ProjectUserProjection();
+                    ProjectUserProjection? projectAssignedUser = await _projectUserCache.GetValue(request.assignedId);
+                    ProjectUserProjection? projectManager = await _projectUserCache.GetValue(request.managerId);
                     List<Comments> comments = new();
                     List<CommentEventProperty> commentsInRequest = request.comment;
-                    var commentsInIndexBody = commentsInRequest.ConvertAll<Comments>((x) =>
-                    {
-                        Comments comment = new();
-                        comment.comment = x.comment;
-                        comment.UserId = x.UserId;
-
-                        //start of logic
-
-                        ProjectUserProjection user = new();
-                        bool res_bool = _projectUserCache.GetValue(x.UserId, out user);
-                        if (res_bool)
+                    var commentsInIndexBody = await Task.WhenAll(
+                        commentsInRequest.Select(async x =>
                         {
-                            comment.UserName = user.UserName;
-                        }
-                        else
-                        {
-                            comment.UserName = "Unknown User";
-                        }
-                        //this becomes a concern because all have to be validated, for now we can keep comments as unknown user for case where user was deleted
-                        comment.Timestamp = x.Timestamp;
-                        return comment;
-                    }
+                            var comment = new Comments
+                            {
+                                comment = x.comment,
+                                UserId = x.UserId,
+                                UserName = (await _projectUserCache.GetValue(x.UserId))?.UserName ?? "Unknown User",
+                                Timestamp = x.Timestamp
+                            };
+                            return comment;
+                        })
                     );
+                    var commentList = commentsInIndexBody.ToList();
                     WorkIndexBody body = new WorkIndexBody
                     {
                         Id = request.Id,
                         Name = request.Name,
                         ProjectId = request.ProjectId,
                         ProjectName = project.ProjectName,
-                        _Comment = commentsInIndexBody,
+                        _Comment = commentList,
                         assignedId = request.assignedId,
                         AssignedName = projectAssignedUser.UserName,
                         ManagerName = projectManager.UserName,

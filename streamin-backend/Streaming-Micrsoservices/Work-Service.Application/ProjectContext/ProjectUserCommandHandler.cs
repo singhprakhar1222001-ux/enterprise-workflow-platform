@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using Work_Service.Application.Abstractions;
+using Work_Service.Domain.Abstraction;
 using Work_Service.Domain.ProjectContext;
 using Work_Service.Domain.ProjectContext.DomainEventss;
+using ProjectUserClass=Work_Service.Domain.ProjectUser.ProjectUser;
 
 namespace Work_Service.Application.ProjectContext
 {
@@ -18,14 +20,22 @@ namespace Work_Service.Application.ProjectContext
     public class ProjectCreatedCommandHandler : IRequestHandler<ProjectCreateCommand>
     {
         private readonly IUnitofWork<ProjectBase> _unitOfWork;
-        public ProjectCreatedCommandHandler(IUnitofWork<ProjectBase> unitofWork)
+        private readonly IUnitofWork<ProjectUserClass> _userUnitOfWork;
+        public ProjectCreatedCommandHandler(IUnitofWork<ProjectBase> unitofWork,IUnitofWork<ProjectUserClass> userUnitOfWork)
         {
             _unitOfWork= unitofWork;
+            _userUnitOfWork= userUnitOfWork;
         }
         public async Task Handle(ProjectCreateCommand request, CancellationToken cancellationToken)
         {
             var projectBase=ProjectBase.CreateProject(Name: request.Name, Description: request.Description, Projecthead: request.ProjectHead);
             _unitOfWork.Add(projectBase);
+            var ProjectUser = ProjectUserClass.AssignProjectUser(
+                Userid: projectBase.ProjectHead,
+                ProjectId: projectBase.Id,
+                role: Role.Manager
+                );
+            _userUnitOfWork.Add(ProjectUser);
             await _unitOfWork.SaveChangesAsync();
             return;
         }
@@ -49,6 +59,7 @@ namespace Work_Service.Application.ProjectContext
                 );
             _unitofWork.AddOutbox(projectCreatedEvent);
             
+        
         }
     }
     public class ProjectCreatedSecondHandler : INotificationHandler<ProjectCreatedDomainEvent>

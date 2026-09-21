@@ -63,17 +63,17 @@ namespace Work_Service.Domain.WorkContext
             }
 
             var workItem=new Workitem(Name, description, comment, ProjectId,assignedId,managerId,Deadline);
-            //workItem.AddEvent(new WorkCreatedDomainEvent(
-            //    eventID:Guid.NewGuid(),
-            //    Id:workItem.Id,
-            //    name:workItem.Name,
-            //    description:workItem.description,
-            //    ProjectId:workItem.ProjectId,
-            //    assignedId:workItem.assignedId,
-            //    managerId:workItem.managerId,
-            //    assignmentDate:workItem.AssignmentDate,
-            //    deadline:workItem.Deadline
-            //    ));
+            workItem.AddEvent(new WorkCreatedDomainEvent(
+                eventID: Guid.NewGuid(),
+                Id: workItem.Id,
+                name: workItem.Name,
+                description: workItem.description,
+                ProjectId: workItem.ProjectId,
+                assignedId: workItem.assignedId,
+                managerId: workItem.managerId,
+                assignmentDate: workItem.AssignmentDate,
+                deadline: workItem.Deadline
+                ));
             return workItem;
         }
 
