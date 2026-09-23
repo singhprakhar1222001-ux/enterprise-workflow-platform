@@ -11,14 +11,15 @@ var postgres = builder.AddPostgres("postgres")
     
 
 var rabbitmq = builder.AddRabbitMQ("rabbitmq")
-    .WithLifetime(ContainerLifetime.Session)
+    .WithLifetime(ContainerLifetime.Persistent)
     .WithManagementPlugin();
 
 var elasticSearch = builder.AddElasticsearch("elasticSearch")
     .WithImage("elastic/elasticsearch", "9.4.7")
     .WithEnvironment("xpack.security.enabled", "false")
+    .WithEnvironment("xpack.ml.enabled", "false")
     .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
-    .WithLifetime(ContainerLifetime.Session);
+    .WithLifetime(ContainerLifetime.Persistent);
 
 
 // Define the user and password as Aspire parameters first

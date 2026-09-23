@@ -24,12 +24,12 @@ namespace Audit_Service.API.Infrastructure.BufferService
             var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
            
             List<AuditEvent> Buffer = new();
-             
+            var timertick = timer.WaitForNextTickAsync(stoppingToken).AsTask();
             try
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    var timertick = timer.WaitForNextTickAsync(stoppingToken).AsTask();
+                    
                     var readAvailable = reader.WaitToReadAsync(stoppingToken).AsTask();
                     await Task.WhenAny(readAvailable, timertick);
 
@@ -37,6 +37,7 @@ namespace Audit_Service.API.Infrastructure.BufferService
                     {
                         //flush when completed even if empty
                         await flush(Buffer, stoppingToken);
+                        timertick = timer.WaitForNextTickAsync(stoppingToken).AsTask();
                     }
                     while (Buffer.Count() < 20 && reader.TryRead(out var item))
                     {
@@ -50,7 +51,7 @@ namespace Audit_Service.API.Infrastructure.BufferService
             }
             catch (Exception ex) {
                 await flush(Buffer, stoppingToken);
-                throw ex;
+                throw;
             }
             finally
             {
